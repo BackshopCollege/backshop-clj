@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html>
+  <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+      <title>Clojure backshop</title>
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+      <link rel="stylesheet" href="style.css">
+      <link rel="stylesheet" href="railscast.css">
+  </head>
+  <body>
+
+  <div class="wrapper">
+    <nav id="sidebar">
+      <div class="sidebar-header">
+          <h3>Clojure Backshop</h3>
+      </div>
+
+      <ul id="menu" class="list-unstyled components">
+
+          <li>
+              <a href="#lein">lein</a>
+          </li>
+
+          <li>
+              <a href="#repl">repl</a>
+          </li>
+
+          <li>
+              <a href="#def">def</a>
+          </li>
+
+          <li>
+              <a href="#defn">defn - &#955; - anonymous</a>
+          </li>
+
+          <li>
+              <a href="#namespace">namespace</a>
+          </li>
+
+          <li>
+            <a href="#if">if - else</a>
+          </li>
+
+          <li>
+              <a href="#">let</a>
+          </li>
+
+          <li>
+              <a href="#">map</a>
+          </li>
+
+          <li>
+              <a href="#">partial</a>
+          </li>
+
+          <li>
+              <a href="#">reduce</a>
+          </li>
+
+          <li>
+              <a href="#">comp</a>
+          </li>
+
+          <li>
+              <a href="#">-></a>
+          </li>
+
+          <li>
+              <a href="#">ring</a>
+          </li>
+
+          <li>
+              <a href="#">middleware</a>
+          </li>
+
+          <li>
+              <a href="#">test</a>
+          </li>
+
+      </ul>
+  </nav>
+
+  <div id="content" style="width: 100%">
+
+    <div id="lein" class="hide clj">
+      <h2>leinigen</h2>
+        <p> declarative configuration and project automation made simple </p>
+        <div class="line"></div>
+
+        <pre>
+          <code class="hljs bash">
+  # install leinigen
+  $ brew install leinigen
+
+  # creating new app
+  $ lein new app backshop
+
+  # running tests
+  $ lein test
+
+  # start a repl
+  $ lein repl
+
+  # all commands
+  $ lein
+
+          </code>
+        </pre>
+    </div>
+
+    <div id="repl" class="hide clj">
+      <h2>repl</h2>
+        <p> read-evaluate-print-loop will empower your development experience </p>
+        <div class="line"></div>
+
+        <pre>
+          <code class="hljs clojure">
+  $ lein repl
+  ;; you can type all clojure commands and get the feedback immediately
+   backshop.core=> (+ 1 2)
+   3
+
+   backshop.core=> (defn sum [a b] (+ a b))
+   #'backshop.core/sum
+
+   backshop.core=> (sum 1 2)
+   3
+          </code>
+        </pre>
+
+      <p> better exception experience on repl
+      add the follow to project.clj </p>
+
+      <pre>
+        <code class="hljs clojure">
+      :repl-options { :caught clj-stacktrace.repl/pst+ }
+      :profiles {:dev { :dependencies [[clj-stacktrace "0.2.8"]]} }
+        </code>
+      </pre>
+      <p> the above settings will print better stacktrace once things blows up. </p>
+
+      <pre>
+        <code class="hljs clojure">
+          backshop.core=> (/ 1 0)
+  ArithmeticException Divide by zero  clojure.lang.Numbers.divide (Numbers.java:158)
+  java.lang.ArithmeticException: Divide by zero
+                    Numbers.java:158 clojure.lang.Numbers.divide
+                   Numbers.java:3808 clojure.lang.Numbers.divide
+  form-init5807277563015766183.clj:1 backshop.core/eval1376
+  form-init5807277563015766183.clj:1 backshop.core/eval1376
+                  Compiler.java:6927 clojure.lang.Compiler.eval
+                  Compiler.java:6890 clojure.lang.Compiler.eval
+                       core.clj:3105 clojure.core/eval
+                       core.clj:3101 clojure.core/eval
+                        main.clj:240 clojure.main/repl[fn]
+                        main.clj:240 clojure.main/repl[fn]
+                        main.clj:258 clojure.main/repl[fn]
+                        main.clj:258 clojure.main/repl
+                        main.clj:174 clojure.main/repl
+                    RestFn.java:1523 clojure.lang.RestFn.invoke
+           interruptible_eval.clj:87 clojure.tools.nrepl.middleware.interruptible-eval/evaluate[fn]
+                        AFn.java:152 clojure.lang.AFn.applyToHelper
+                        AFn.java:144 clojure.lang.AFn.applyTo
+                        core.clj:646 clojure.core/apply
+                       core.clj:1881 clojure.core/with-bindings*
+                       core.clj:1881 clojure.core/with-bindings*
+                     RestFn.java:425 clojure.lang.RestFn.invoke
+           interruptible_eval.clj:85 clojure.tools.nrepl.middleware.interruptible-eval/evaluate
+           interruptible_eval.clj:55 clojure.tools.nrepl.middleware.interruptible-eval/evaluate
+          interruptible_eval.clj:222 clojure.tools.nrepl.middleware.interruptible-eval/interruptible-eval[fn]
+          interruptible_eval.clj:190 clojure.tools.nrepl.middleware.interruptible-eval/run-next[fn]
+                         AFn.java:22 clojure.lang.AFn.run
+        ThreadPoolExecutor.java:1142 java.util.concurrent.ThreadPoolExecutor.runWorker
+         ThreadPoolExecutor.java:617 java.util.concurrent.ThreadPoolExecutor$Worker.run
+                     Thread.java:745 java.lang.Thread.run
+
+        </code>
+      </pre>
+
+    </div>
+
+    <div id="def" class="hide clj">
+      <h2>"variables"</h2>
+        <p> bind values to names -> 'variables' </p>
+        <div class="line"></div>
+        <pre>
+          <code class="hljs clojure">
+  ;; the way to bind values to name is using def
+  backshop.core=> (def workshop-name "backshop")
+  ;;now you can use the name workshop-name everywhere
+
+  backshop.core=> workshop-name
+  "backshop"
+
+  ;;you could even bind functions to name
+  backshop.core=> (def super-sum (fn [a b] (+ a b)))
+  backshop.core=> (super-sum 1 2)
+  3
+
+  ;; you will see in the next section that you could use defn to define function as well
+  ;;defn is the same as (def name (fn []))
+
+  ;; you could bind whatever value to any symbol
+  backshop.core=> (def persons [{:name "john"} {:name "doe"}])
+  backshop.core=> persons
+  [{:name "john"} {:name "doe"}]
+
+
+
+          </code>
+        </pre>
+
+    </div>
+
+   <div id="defn" class="hide clj">
+    <h2>functions</h2>
+      <p> functions are first class citizens </p>
+      <div class="line"></div>
+
+      <h4> tldr; </h4>
+      <p> you could create functions using defn or simply using fn </p>
+
+    <pre>
+      <code class="hljs clojure">
+    ;; the easy way to create a function is with fn
+    user=> (fn [a b] (+ a b))
+
+    ;; let's bind a name to the function
+    user=> (def my-super-sum (fn [a b] (+ a b) ))
+
+    ;; now you can easily apply arguments to the function
+    user=> (my-super-sum 1 4) ; 5
+
+    ;; DEFN
+    ;; simpler way to create my-super-sum would be using defn
+    user=> (defn my-super-sum [a b] (+ a b))
+
+    ;; RETURN
+    ;; the last form expression evaluated will be the return's function
+    user=> (defn my-crazy-sum [a b]
+              (println "logging +" a b)
+              (+ a b))
+
+    ;; as functions are value, we could return a function
+    user=> (defn sum-factory [a]
+              (fn [b] (+ a b)))
+
+    user=> (def inc-five (sum-factory 5))
+    user=> (inc-five 10) ; will return 15
+
+    ;; we could create 'anonymous' functions in clojure with special syntax
+    user=> (def sum #(+ %1 %2))
+
+    ;; the #(function %1 %2 ... %n) syntax is a easy way to create inline func
+    ;; and very useful specially on map/reduce
+    ; shorthand for (fn [a] (inc a)) => #(inc %1)
+    user=> (map #(inc %1) [1 2 3 4])
+
+    </code>
+  </pre>
+</div>
+
+<div id="namespace" class="hide clj">
+  <h2>namespace</h2>
+    <p> modularizing your app </p>
+    <div class="line"></div>
+    <pre>
+      <code class="hljs clojure">
+
+      </code>
+    </pre>
+  </div>
+
+
+
+
+ <script src="//code.jquery.com/jquery-1.12.0.min.js"></script>
+ <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+ <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.4.0/languages/clojure.min.js"></script>
+ <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.4.0/languages/bash.min.js"></script>
+ <script src="//cdnjs.cloudflare.com/ajax/libs/highlightjs-line-numbers.js/2.2.0/highlightjs-line-numbers.min.js"></script>
+
+ <script type="text/javascript">
+
+      hljs.initHighlightingOnLoad();
+      hljs.initLineNumbersOnLoad();
+
+     $(document).ready(function () {
+        render(window.location.hash || "#lein");
+
+        $("#menu").on("click", "a", function() {
+          render($(this).attr("href"));
+        });
+
+        function render(page) {
+          hide();
+          show(page)
+        }
+
+        function hide() {
+          $("#menu li").removeClass('active');
+          $("#content .clj").addClass('hide');
+        }
+
+        function show(page) {
+          $(page).toggleClass('hide');
+          $("a[href='" + page + "']").each(function(i) {
+            $(this).parent().toggleClass('active')
+          });
+        }
+
+     });
+ </script>
+</body>
+</html>
