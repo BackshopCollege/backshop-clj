@@ -45,35 +45,35 @@
           </li>
 
           <li>
-              <a href="#">let</a>
+              <a href="#let">let</a>
           </li>
 
           <li>
-              <a href="#">map</a>
+              <a href="#map">map</a>
           </li>
 
           <li>
-              <a href="#">partial</a>
+              <a href="#partials">partial</a>
           </li>
 
           <li>
-              <a href="#">reduce</a>
+              <a href="#reduce">reduce</a>
           </li>
 
           <li>
-              <a href="#">comp</a>
+              <a href="#comp">comp</a>
           </li>
 
           <li>
-              <a href="#">-></a>
+              <a href="#threading">-> and ->></a>
           </li>
 
           <li>
-              <a href="#">ring</a>
+              <a href="#ring">ring</a>
           </li>
 
           <li>
-              <a href="#">middleware</a>
+              <a href="#middleware">middleware</a>
           </li>
 
           <li>
@@ -267,7 +267,7 @@
   <h2>namespace</h2>
     <p> your clojure runtime it is nothing than a set of namespaces talking with each other</p>
     <p> namespaces are global entities that you can always refer by using the FQDN</p>
-    <p> for instance: (<string>clojure.core/inc</strong> 1) </p>
+    <p> for instance: (<strong>clojure.core/inc</strong> 1) </p>
 
     <div class="line"></div>
     <pre>
@@ -375,7 +375,230 @@
     </div>
 
 
+    <div id="let" class="hide clj">
+      <h2>let</h2>
+        <p> create lexically scoped variables </p>
+        <div class="line"></div>
 
+        <pre>
+          <code class="hljs clojure">
+  (let [a 1 
+        b (+ 2 a] 
+         (+ a b))
+  4
+          </code>
+        </pre>
+    </div>
+
+    <div id="map" class="hide clj">
+      <h2>map</h2>
+        <p> lazily map over a coll </p>
+        <div class="line"></div>
+
+        <pre>
+          <code class="hljs clojure">
+
+  user=> (map inc [1 2 3 4])
+  (2 3 4 5)
+  user=>
+
+  user=> (map #(println %) ["Hello" "World"])
+  Hello
+  World
+  (nil nil)
+  ;; remember, it returns the mapped coll
+
+          </code>
+        </pre>
+    </div>
+
+    <div id="partial" class="hide clj">
+      <h2>partial</h2>
+        <p> partial application </p>
+        <div class="line"></div>
+
+        <pre>
+          <code class="hljs clojure">
+  user=> (def inc1 (partial + 1))
+  #'user/inc1
+  user=> (inc1 3)
+  4
+
+  ;; works with multiple args
+  user=> ((partial sum4 1 2) 3 4)
+  10
+
+          </code>
+        </pre>
+    </div>
+
+    <div id="reduce" class="hide clj">
+      <h2>reduce</h2>
+        <p> reduce over a coll </p>
+        <div class="line"></div>
+
+        <pre>
+          <code class="hljs clojure">
+  user=> (reduce + [1 2 3])
+  6
+
+  ;; also accepts an initial value
+  user=> (reduce conj #{:initial } [:a :b :c])
+  #{:c :b :initial :a}
+  
+          </code>
+        </pre>
+    </div>
+
+    <div id="comp" class="hide clj">
+      <h2>comp</h2>
+        <p> function composition, right-to-left </p>
+        <div class="line"></div>
+
+        <pre>
+          <code class="hljs clojure">
+  user=> ((comp str +) 8 8 8)
+  "24"
+
+  user=> (str (+ 8 8 8))
+  "24"
+          </code>
+        </pre>
+    </div>
+
+    <div id="threading" class="hide clj">
+      <h2>partial</h2>
+        <p> create lexically scoped variables </p>
+        <div class="line"></div>
+
+        <pre>
+          <code class="hljs clojure">
+  ;; -> is thread-first
+
+  user=> (def someval {:a {:b {:c {:d 1}}}})
+  #'user/someval
+  user=>   (:d (:c (:b (:a someval))))
+  1
+
+  ;; remember, a keyword can be used as a function
+  ;; these return the same value:
+
+  ;; (defn get-a [x] (:a x))
+  ;; (defn get-a [x] (x :a))
+  ;; (defn get-a [x] (partial :a))
+  ;; (:a x) 
+  user=> (-> someval :a :b :c :d)
+  1
+
+  ;;
+  ;; ->> is thread-last
+
+  user=> (->> [1 2 [3 4] 5]
+              flatten        ;; or (flatten)
+              (#(map inc %)) ;; anon functions have to be wrapped in () to be invoked!
+              (map inc))
+  (3 4 5 6 7)
+            </code>
+        </pre>
+    </div>    
+
+    <div id="ring" class="hide clj">
+      <h2>ring</h2>
+        <p> Clojure HTTP server abstraction, based on hashmaps </p>
+        <div class="line"></div>
+
+        <pre>
+          <code class="hljs clojure">
+  ;; declare dependency on project.clj
+  [ring "1.6.3"] ;; includes all subdeps
+
+  ;; create a fn that returns a map
+  (defn handler [request]
+    {:status 200
+     :headers {"Content-Type" "text/html"}
+     :body "Hello World"})
+
+  ;; you can also use ring's ring.util.response/response and ring.util.response/status functions:
+  (defn handler [request]
+     (-> (response "Created")
+         (status 201)) ;; equivalent to (status (response "Created") 201)
+
+  ;; go for it
+  => (use 'ring.adapter.jetty)
+  => (use 'hello-world.core)
+  => (run-jetty handler {:port 3000})
+
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; or go for it with a main-
+  (defn -main [& args]
+    ; #' means "use the var"
+    (jetty/run-jetty (wrap-reload #'handler) {:port 3000}))
+
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; you can also do hot-reload
+  (ns myapp
+    (:require
+     [compojure.core :refer [GET defroutes]]
+     [ring.middleware.reload :refer [wrap-reload]]))
+
+  (defroutes app
+    (GET "/"      [] "hello world")
+    (GET "/other" [req] (call-my-handler req)))
+
+  (def reloadable-app
+    (wrap-reload #'app)  ;;vars are normally interned (cached), the #' bit makes sure we get the "live" value
+
+          </code>
+        </pre>
+    </div>
+
+    <div id="middleware" class="hide clj">
+      <h2>middleware</h2>
+        <p> chain middleware functions </p>
+        <div class="line"></div>
+
+        <pre>
+          <code class="hljs clojure">
+
+  ;; wrap your handlers with other functions
+  (defn wrap-auth [handler]
+    (fn [request]
+      (if (authorized? request)
+        (handler request)
+        (-> (response "Access Denied")
+            (status 403)))))
+
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; ring comes with some basic middleware
+  (:require [ring.middleware.json :refer [wrap-json-params wrap-json-body]]
+             ...)
+
+  (def app
+    (-> handler
+        ;; all json content-type comes parsed (eg: {"key": "value", "other": 3} becomes {:key ["value"] :other 3})
+        ;; in your handler, you get it from the request: (:body request)
+        (wrap-json-body {:keywords? true :bigdecimals? true})
+        ))
+
+
+
+          </code>
+        </pre>
+    </div>
+
+    <div id="test" class="hide clj">
+      <h2>test</h2>
+        <p> test </p>
+        <div class="line"></div>
+
+        <pre>
+          <code class="hljs clojure">
+ 
+          </code>
+        </pre>
+    </div>    
+
+  </div>
 
  <script src="//code.jquery.com/jquery-1.12.0.min.js"></script>
  <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
