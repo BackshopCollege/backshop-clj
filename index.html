@@ -53,7 +53,7 @@
           </li>
 
           <li>
-              <a href="#partials">partial</a>
+              <a href="#partial">partial</a>
           </li>
 
           <li>
@@ -382,10 +382,32 @@
 
         <pre>
           <code class="hljs clojure">
-  (let [a 1 
-        b (+ 2 a] 
-         (+ a b))
-  4
+
+    ;; let allow us create local bindings "variables" visible only in the form scope
+    (let [a (rand-int 10)
+          b (rand-int 10)]
+        (+ a b))
+
+    ;; the follow let example will fail because C binding is being used outside let form
+    (defn fail [])
+      (let [a (rand-int 10)
+            b (rand-int 10)
+            c (rand-int 10)]
+            (println "here c is visible" c)) ;; let close
+
+      (println "here c is not visible anymore" c))
+
+    ;; other example
+    ;;right triangule formula: a*a + b*b = c*c
+
+    (defn right-triangle? [coll]
+      (let [a-square (* (nth coll 0) (nth coll 0))
+            b-square (* (nth coll 1) (nth coll 1))
+            c-square (* (nth coll 2) (nth coll 2))]
+        (= (+ a-square b-square) c-square)))
+
+      (right-triangle? [1 2 3])
+
           </code>
         </pre>
     </div>
@@ -445,7 +467,7 @@
   ;; also accepts an initial value
   user=> (reduce conj #{:initial } [:a :b :c])
   #{:c :b :initial :a}
-  
+
           </code>
         </pre>
     </div>
@@ -475,10 +497,29 @@
           <code class="hljs clojure">
   ;; -> is thread-first
 
-  user=> (def someval {:a {:b {:c {:d 1}}}})
-  #'user/someval
-  user=>   (:d (:c (:b (:a someval))))
-  1
+  ;; auxiliar functions
+  ;; clojure.string/replace string match replacement
+  ;; (clojure.string/replace "hello" #"e" "E") => "hEllo"
+
+  ;; clojure.string/upper-case string
+  ;; (clojure.string/upper-case "hello") => "HELLO"
+
+  ;; let's suppose we want to uppercase the person's name
+
+  (def person {:name "backshop", :age 10, :country "portugal"} )
+
+  (defn sanitize-name [person] ;; non thread first
+    (clojure.string/replace (clojure.string/upper-case (:name person)) #"A" "")
+
+  (defn sanitize->name [person] ;; with thread first
+    (-> person
+        (:name)
+        (clojure.string/upper-case)
+        (clojure.string/replace #"A" ""))) ;=> "BCKSHOP"
+
+
+  (def nested-map {:a {:b {:c {:d 1}}}})
+  (:d (:c (:b (:a nested-map)))) ; => 1
 
   ;; remember, a keyword can be used as a function
   ;; these return the same value:
@@ -486,31 +527,48 @@
   ;; (defn get-a [x] (:a x))
   ;; (defn get-a [x] (x :a))
   ;; (defn get-a [x] (partial :a))
-  ;; (:a x) 
-  user=> (-> someval :a :b :c :d)
-  1
+  ;; (:a x)
 
-  ;;
+  (-> nested-map
+      :a
+      :b
+      :c
+      :d) ; => 1
+
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  
   ;; ->> is thread-last
 
-  user=> (->> [1 2 [3 4] 5]
-              flatten        ;; or (flatten)
-              (#(map inc %)) ;; anon functions have to be wrapped in () to be invoked!
-              (map inc))
-  (3 4 5 6 7)
+  (defn map-inc [coll]
+    (map inc coll))
+
+  (defn reduce-sum [coll]
+    (reduce + coll))
+
+  (->> [1 2 [3 4] 5]
+      flatten        ;; or (flatten)
+      map-inc ;; anon functions have to be wrapped in () to be invoked!
+      reduce-sum) ; =>   (3 4 5 6 7)
+
             </code>
         </pre>
-    </div>    
+    </div>
 
     <div id="ring" class="hide clj">
       <h2>ring</h2>
         <p> Clojure HTTP server abstraction, based on hashmaps </p>
+
+        <div class="line"></div>
+
+        <img src="./clojure-ring-concept.png"></img>
+
         <div class="line"></div>
 
         <pre>
           <code class="hljs clojure">
   ;; declare dependency on project.clj
-  [ring "1.6.3"] ;; includes all subdeps
+  [ring/ring-core "1.6.3"] ;; core
+  [ring/ring-jetty-adapter "1.6.3"] ;; jetty adapter
 
   ;; create a fn that returns a map
   (defn handler [request]
@@ -523,30 +581,14 @@
      (-> (response "Created")
          (status 201)) ;; equivalent to (status (response "Created") 201)
 
-  ;; go for it
+  ;; go for it REPL Mode
   => (use 'ring.adapter.jetty)
   => (use 'hello-world.core)
   => (run-jetty handler {:port 3000})
 
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  ;; or go for it with a main-
+  ;; or go for it with a -main
   (defn -main [& args]
-    ; #' means "use the var"
-    (jetty/run-jetty (wrap-reload #'handler) {:port 3000}))
-
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  ;; you can also do hot-reload
-  (ns myapp
-    (:require
-     [compojure.core :refer [GET defroutes]]
-     [ring.middleware.reload :refer [wrap-reload]]))
-
-  (defroutes app
-    (GET "/"      [] "hello world")
-    (GET "/other" [req] (call-my-handler req)))
-
-  (def reloadable-app
-    (wrap-reload #'app)  ;;vars are normally interned (cached), the #' bit makes sure we get the "live" value
+    (jetty/run-jetty handler {:port 3000}))
 
           </code>
         </pre>
@@ -593,10 +635,10 @@
 
         <pre>
           <code class="hljs clojure">
- 
+
           </code>
         </pre>
-    </div>    
+    </div>
 
   </div>
 
